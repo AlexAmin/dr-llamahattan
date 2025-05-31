@@ -1,0 +1,60 @@
+@import 'tailwindcss';
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme{
+    --animation-spin: "spin 1s linear infinite";
+    /** Height **/
+    --height-navbar: 4.5rem;
+    /** Width **/
+    --width-sidebar: 6rem;
+    --width-sidebar-expanded: 16rem;
+    /** Text **/
+    --text-xxs: 0.60rem;
+    /** BackgroundPosition **/
+    --spacing-pos-0: "0% 0%";
+    --spacing-pos-100: "100% 100%";
+    /** Colors **/
+    /** Colors: navbar **/
+    --color-navbar: var(--color-black);
+    --color-navbar-dark: var(--color-black);
+    --color-navbar-hover: var(--color-zinc-400);
+    --color-navbar-hover-dark: var(--color-zinc-400);
+    --color-navbar-text: var(--color-zinc-300);
+    --color-navbar-text-dark: var(--color-zinc-300);
+    /** Colors: app **/
+    --color-app: var(--color-gray-200);
+    --color-app-50: var(--color-gray-50);
+    --color-app-100: var(--color-gray-100);
+    --color-app-200: var(--color-gray-200);
+    --color-app-300: var(--color-gray-300);
+    --color-app-400: var(--color-gray-400);
+    --color-app-500: var(--color-gray-500);
+    --color-app-dark: var(--color-zinc-950);
+    --color-app-dark-50: var(--color-zinc-900);
+    --color-app-dark-100: var(--color-zinc-800);
+    --color-app-dark-200: var(--color-zinc-700);
+    --color-app-dark-300: var(--color-zinc-600);
+    --color-app-dark-400: var(--color-zinc-500);
+    --color-app-dark-500: var(--color-zinc-400);
+    --color-app-hover: var(--color-zinc-300);
+    --color-app-hover-dark: var(--color-zinc-800);
+    --color-app-text: var(--color-zinc-950);
+    --color-app-text-dark: var(--color-zinc-50);
+    --color-app-text-secondary: var(--color-zinc-500);
+    --color-app-text-secondary-dark: var(--color-zinc-400);
+
+    --color-primary: #8B5CF6;
+    --color-primary-50: #F5F3FF;
+    --color-primary-100: #EDE9FE;
+    --color-primary-200: #DDD6FE;
+    --color-primary-300: #C4B5FD;
+    --color-primary-400: #A78BFA;
+    --color-primary-500: #8B5CF6;
+    --color-primary-600: #7C3AED;
+    --color-primary-700: #6D28D9;
+    --color-primary-800: #5B21B6;
+    --color-primary-900: #4C1D95;
+
+    --color-secondary: #5CF68B;
+}
