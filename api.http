@@ -1,0 +1,23 @@
+### Real-time Audio Processing Request
+POST http://localhost:3000/prompt/live
+Content-Type: multipart/form-data; boundary=WebAppBoundary
+
+--WebAppBoundary
+Content-Disposition: form-data; name="file"; filename="test.wav"
+Content-Type: audio/wav
+
+< ./api/test.wav
+
+### Person Request
+
+### Real-time Audio Processing Request
+POST http://localhost:3000/prompt
+Content-Type: multipart/form-data; boundary=WebAppBoundary
+
+--WebAppBoundary
+Content-Disposition: form-data; name="file"; filename="test.wav"
+Content-Type: audio/wav
+
+< ./api/test.wav
+
+<> 2025-05-31T160151.200.json
