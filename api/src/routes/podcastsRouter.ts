@@ -35,9 +35,9 @@ PodcastsRouter.delete("/:id", async (c: Context, next) => {
     const db: Firestore = c.get("db")
     const userId = c.get("userId")
     const podcastId = c.req.param("id")
-    const podcasts = await usePodcastsService(db).deletePodcast(podcastId)
+    await usePodcastsService(db).deletePodcast(podcastId)
 
-    return c.json(podcasts)
+    return c.json({})
 })
 
 

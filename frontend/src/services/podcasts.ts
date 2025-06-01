@@ -30,7 +30,7 @@ export const usePodcastsService = () => {
         }
     }
 
-    async function createPodcast(topic: string, duration: number) {
+    async function createPodcast(topic: string, duration: string) {
         const response = await apiClient.post<PodcastText[]>("/podcasts", {topic, duration})
         return response.data;
     }

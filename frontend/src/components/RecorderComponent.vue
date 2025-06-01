@@ -43,14 +43,12 @@
 <script lang="ts" setup>
 import {type Ref, ref} from 'vue'
 import {PhMicrophone, PhStop} from '@phosphor-icons/vue'
-import axios, {type AxiosResponse} from 'axios'
+import {type AxiosResponse} from 'axios'
 import {encodeWAVChunk} from "@/util/wav.ts";
 import {recordFromMic} from "@/util/mic.ts";
-import {Checklist} from "@/types/Checklist.ts";
 import apiClient from "@/apiClient.ts";
 
 const isRecording = ref(false)
-const checklist: Ref<Checklist | undefined> = ref(undefined)
 const topic: Ref<string> = ref("")
 const previousScore: Ref<number> = ref(0)
 const question: Ref<string> = ref("")
@@ -64,14 +62,13 @@ apiClient.get("/prompt/question")
 let recorder: MediaRecorder | undefined = undefined
 const toggleRecording = async () => {
   isRecording.value = !isRecording.value
-  checklist.value = []
   let data: Float32Array = new Float32Array()
   console.log("Recording from device mic...")
   if (recorder) recorder.stop()
   if (isRecording.value) recorder = await recordFromMic((chunk: Float32Array) => data = chunk)
   while (isRecording.value) {
     await sendStreamedData(data)
-        .catch((e) => console.log("transcript failed"))
+        .catch(() => console.log("transcript failed"))
   }
   await promptPerson(data)
 }
@@ -110,7 +107,7 @@ async function sendStreamedData(data: Float32Array) {
 
 async function promptPerson(data: Float32Array) {
   const formData = formDataFromFloat32(data)
-  const result = await apiClient.post(
+  await apiClient.post(
       "http://localhost:3000/prompt",
       formData,
       {

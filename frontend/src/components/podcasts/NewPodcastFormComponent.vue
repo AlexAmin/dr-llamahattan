@@ -50,11 +50,9 @@
 <script lang="ts" setup>
 import {PhPlus, PhX} from "@phosphor-icons/vue";
 import {type Ref, ref} from "vue";
-import {usePodcastsStore} from "@/stores/podcasts.ts";
 import {usePodcastsService} from "@/services/podcasts.ts";
 import LoadingSpinnerComponent from "@/components/LoadingSpinnerComponent.vue";
 
-const podcasts = usePodcastsStore()
 const generatingPodcast: Ref<boolean> = ref(false)
 const showForm = ref(false)
 const formData = ref({

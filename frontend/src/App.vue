@@ -36,16 +36,11 @@ import PersonsComponent from "@/components/persons/PersonsComponent.vue";
 const person = usePersonStore()
 const app = useAppStore()
 const view: Ref<AppView> = ref(localStorage.getItem("view") as AppView | undefined || AppView.Podcasts);
-const userId = ref(localStorage.getItem("userId") || "default");
 
 watch(() => view.value, () => {
   console.log("watch")
   localStorage.setItem("view", view.value)
 })
-
-const updateUserId = () => {
-  localStorage.setItem("userId", userId.value);
-}
 
 onMounted(() => person.load())
 </script>

@@ -10,7 +10,7 @@
     <div class="w-full max-w-2xl mx-auto">
       <img
           :src="`https://firebasestorage.googleapis.com/v0/b/dr-lamahattan.firebasestorage.app/o/podcast-cover-images%2F${podcasts.selectedPodcastId}.png?alt=media`"
-          :alt="podcast?.title"
+          :alt="podcast?.summary"
           class="w-full h-64 object-cover rounded-lg shadow-lg"
       />
     </div>
@@ -30,7 +30,7 @@
       <div v-for="(message, index) in podcast?.text" :key="index"
            :class="[
              'p-4 rounded-lg max-w-[80%]',
-             message.role === 'assistant' ? 'bg-blue-100 ml-auto' : 'bg-gray-100'
+             message.speaker === speakerA ? 'bg-blue-100 ml-auto' : 'bg-gray-100'
            ]">
         {{ message.speaker }}: {{ message.text }}
       </div>
@@ -43,5 +43,7 @@ import type {Podcast} from '@/types/Podcast';
 import {computed, type ComputedRef} from "vue";
 
 const podcasts = usePodcastsStore()
-const podcast: ComputedRef<Podcast> = computed(() => podcasts.podcast)
+const podcast: ComputedRef<Podcast | undefined> = computed(() => podcasts.podcast)
+const speakerA: ComputedRef<string|undefined> = computed(() => podcast.value?.text[0]?.speaker)
+// const speakerB: ComputedRef<string|undefined> = computed(() => podcast.value?.text[1]?.speaker)
 </script>
