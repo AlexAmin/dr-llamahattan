@@ -25,7 +25,7 @@ export async function promptPodcastChapters(topic: string, durationMinutes: numb
             // @ts-expect-error
             json_schema: {schema: llmSchema}
         },
-            model: "Cerebras-Llama-4-Scout-17B-16E-Instruct",
+            model: "Llama-4-Scout-17B-16E-Instruct-FP8",
     });
     const data = JSON.parse((createChatCompletionResponse.completion_message.content as MessageTextContentItem).text)
     return data.chapters

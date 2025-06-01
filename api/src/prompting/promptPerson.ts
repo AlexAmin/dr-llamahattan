@@ -81,7 +81,7 @@ async function prompt(schema: any, transcript: string, data?: Person) {
             // @ts-expect-error - invalid schema def by meta
             json_schema: {schema: llmSchema}
         },
-        model: "Cerebras-Llama-4-Maverick-17B-128E-Instruct",
+        model: "Llama-4-Maverick-17B-128E-Instruct-FP8",
     });
     let result = JSON.parse((createChatCompletionResponse.completion_message.content as MessageTextContentItem).text)
     if (result.data) result = result.data

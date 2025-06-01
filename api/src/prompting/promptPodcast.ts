@@ -32,7 +32,7 @@ export async function promptPodcast(language: string, topic: string, durationMin
             // @ts-expect-error
             json_schema: {schema: llmSchema}
         },
-        model: "Cerebras-Llama-4-Maverick-17B-128E-Instruct",
+        model: "Llama-4-Maverick-17B-128E-Instruct-FP8",
     });
     const data = JSON.parse((createChatCompletionResponse.completion_message.content as MessageTextContentItem).text)
     return data.podcast

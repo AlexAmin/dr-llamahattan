@@ -1,5 +1,5 @@
 <template>
-  <div class="flex flex-col max-w-3xl mx-auto my-auto">
+  <div class="flex flex-col max-w-5xl mx-auto my-auto pr-8">
     <div class="flex flex-row items-center justify-center
                 transition-all duration-300 ease-in-out
                 rounded-full overflow-hidden w-full
