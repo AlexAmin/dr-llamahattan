@@ -1,38 +1,63 @@
 import {llamaClient} from "../llama/llamaClient";
 import {loadTextFile} from "../util/loadTextFile";
-import {PersonalInformationSchema} from "../schemas/Person";
+import {
+    AssetsSchema,
+    AttributesSchema,
+    EducationsSchema,
+    EmploymentsSchema,
+    EventsSchema,
+    Person,
+    PersonalInformationSchema,
+    PersonRelationshipsSchema,
+    PhysicalCharacteristicsSchema,
+    ResidencesSchema
+} from "../schemas/Person";
 import {toLLMSchema} from "../llama/toLLMSchema";
 
-const prompt: string = loadTextFile("PersonPrompt.md")
+const promptString: string = loadTextFile("PersonPrompt.md")
+
+const promptPersonalInformationSchema = async (transcript: string, data: Person) => data.personalInformation = await prompt(PersonalInformationSchema, transcript, data)
+const promptAttributesSchema = async (transcript: string, data: Person) => data.attributes = await prompt(AttributesSchema, transcript, data)
+const promptPhysicalCharacteristicsSchema = async (transcript: string, data: Person) => data.physicalCharacteristics = await prompt(PhysicalCharacteristicsSchema, transcript, data)
+const promptPersonRelationshipsSchema = async (transcript: string, data: Person) => data.relationships = await prompt(PersonRelationshipsSchema, transcript, data)
+const promptEducationsSchema = async (transcript: string, data: Person) => data.education = await prompt(EducationsSchema, transcript, data)
+const promptEmploymentsSchema = async (transcript: string, data: Person) => data.employment = await prompt(EmploymentsSchema, transcript, data)
+const promptResidencesSchema = async (transcript: string, data: Person) => data.residences = await prompt(ResidencesSchema, transcript, data)
+const promptAssetsSchema = async (transcript: string, data: Person) => data.assets = await prompt(AssetsSchema, transcript, data)
+const promptEventsSchema = async (transcript: string, data: Person) => data.events = await prompt(EventsSchema, transcript, data)
 
 export async function promptPerson(transcription: string) {
-    const schemas = [
-        PersonalInformationSchema,
-        // AttributesSchema,
-        // PhysicalCharacteristicsSchema,
-        // DigitalFootprintSchema,
-        // PersonRelationshipsSchema,
-        // EducationsSchema,
-        // EmploymentsSchema,
-        // ResidencesSchema,
-        // AssetsSchema,
-    ]
-    for (const schema of schemas) {
-        const llmSchema = toLLMSchema(schema)
-        const createChatCompletionResponse = await llamaClient.chat.completions.create({
-            messages: [
-                {role: "system", content: prompt},
-                {role: "user", content: transcription}
-            ],
-            response_format: {
-                type: "json_schema",
-                json_schema: {schema: llmSchema}
-            },
-            model: "Llama-4-Maverick-17B-128E-Instruct-FP8",
-        });
-        const result = JSON.parse(createChatCompletionResponse.completion_message.content.text).data
-        console.log("")
-    }
+    const data: Person = {}
+    await Promise.all([
+        promptPersonalInformationSchema(transcription, data),
+        promptAttributesSchema(transcription, data),
+        promptPhysicalCharacteristicsSchema(transcription, data),
+        promptPersonRelationshipsSchema(transcription, data),
+        promptEducationsSchema(transcription, data),
+        promptEmploymentsSchema(transcription, data),
+        promptResidencesSchema(transcription, data),
+        promptAssetsSchema(transcription, data),
+        promptEventsSchema(transcription, data)
+    ])
+    console.log(data)
+}
+
+async function prompt(schema: any, transcript: string, data?: Person) {
+    const createChatCompletionResponse = await llamaClient.chat.completions.create({
+        messages: [
+            {role: "system", content: promptString},
+            {role: "user", content: transcript}
+        ],
+        response_format: {
+            type: "json_schema",
+            // @ts-expect-error - invalid schema def by meta
+            json_schema: {schema: toLLMSchema(schema)}
+        },
+        model: "Llama-4-Maverick-17B-128E-Instruct-FP8",
+    });
+    let result = JSON.parse(createChatCompletionResponse.completion_message.content["text"])
+    if (result.data) result = result.data
+    return result
 }
 
 if (require.main === module) {

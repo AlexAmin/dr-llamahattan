@@ -1,7 +1,7 @@
 import {z} from 'zod';
 
 // Reusable Schemas
-const DateStringSchema = z.string().describe("ISO String")
+const DateStringSchema = z.string()
 const AddressSchema = z.object({
     street: z.string(),
     city: z.string(),
@@ -12,20 +12,21 @@ const AddressSchema = z.object({
 
 const PeriodSchema = z.object({
     startDate: DateStringSchema,
-    endDate: DateStringSchema.optional().describe("End date can be null for current events"),
+    endDate: DateStringSchema.describe("End date can be null for current events"),
 });
 
 
 export const PersonRelationshipSchema = z.object({
     type: z.enum(['Parent', 'Child', 'Spouse', 'Partner', 'Sibling', 'Friend', 'Professional', 'Other']),
-    details: z.string().optional().describe("e.g. married on, colleague at, friends since, etc. "),
-})
+    details: z.string().describe("e.g. married on, colleague at, friends since, etc. "),
+}).strict()
 export const PersonRelationshipsSchema = z.array(PersonRelationshipSchema)
+
 // Main Person Schema
 export const EducationSchema = z.object({
     institution: z.string(),
-    degree: z.string().optional(),
-    fieldOfStudy: z.string().optional(),
+    degree: z.string(),
+    fieldOfStudy: z.string(),
     period: PeriodSchema,
 });
 export const EducationsSchema = z.array(EducationSchema)
@@ -35,7 +36,7 @@ export const EmploymentSchema = z.object({
     company: z.string(),
     role: z.string(),
     period: PeriodSchema,
-    description: z.string().optional(),
+    description: z.string(),
 });
 export const EmploymentsSchema = z.array(EmploymentSchema)
 export const ResidenceSchema = z.object({
@@ -44,56 +45,25 @@ export const ResidenceSchema = z.object({
 });
 export const ResidencesSchema = z.array(ResidenceSchema)
 
-export const TravelSchema = z.object({
-    destination: z.string(),
-    period: PeriodSchema,
-    notes: z.string().optional(),
-});
-
-export const MilestoneSchema = z.object({
-    name: z.string().describe("Marriage, first child born, etc."),
+export const EventSchema = z.object({
+    type: z.string().describe("Travel, Medical Event, Birth, Wedding, Example Arrest, Lawsuit, Will Creation, etc."),
     date: DateStringSchema,
-    description: z.string().optional(),
+    details: z.string().describe("Long text detailing what happened at this event"),
 });
-
-export const MedicalHistorySchema = z.object({
-    condition: z.string(),
-    diagnosisDate: DateStringSchema.optional(),
-    treatment: z.string().optional(),
-    notes: z.string().optional(),
-});
-
-export const LegalEventSchema = z.object({
-    type: z.string().describe("Example Arrest, Lawsuit, Will Creation"),
-    date: DateStringSchema,
-    details: z.string().optional(),
-});
+export const EventsSchema = z.array(EventSchema)
 
 export const PhysicalCharacteristicsSchema = z.object({
-    heightCm: z.number().optional(),
-    weightKg: z.number().optional(),
-    eyeColor: z.string().optional(),
-    hairColor: z.string().optional(),
-});
-
-export const SocialMediaSchema = z.object({
-    platform: z.string(),
-    handle: z.string(),
-    url: z.string().url().optional(),
-});
-
-export const DigitalFootprintSchema = z.object({
-    socialMedia: z.array(SocialMediaSchema).optional(),
-    emails: z.array(z.string().email()).optional(),
-    phoneNumbers: z.array(z.string()).optional().describe("Consider more robust phone number validation if needed"),
-    websites: z.array(z.string().url()).optional(),
+    heightCm: z.number(),
+    weightKg: z.number(),
+    eyeColor: z.string(),
+    hairColor: z.string(),
 });
 
 export const AssetSchema = z.object({
     name: z.string(),
-    type: z.string().optional().describe('e.g., "Real Estate", "Vehicle", "Financial Account"'),
-    value: z.number().optional().describe("Numeric value, e.g., USD"),
-    details: z.string().optional(),
+    type: z.enum(['real-estate', 'vehicle', 'stocks', 'other']),
+    value: z.number().describe("Numeric value, e.g., USD"),
+    details: z.string().describe("Long text with all details known about this asset."),
 });
 export const AssetsSchema = z.array(AssetSchema)
 
@@ -106,25 +76,24 @@ export const PersonalInformationSchema = z.object({
 })
 
 export const AttributesSchema = z.object({
-    skills: z.array(z.string()).optional(),
-    hobbies: z.array(z.string()).optional(),
-    beliefs: z.array(z.string()).optional(),
-    values: z.array(z.string()).optional(),
-    personalityTraits: z.array(z.string()).optional(),
+    skills: z.array(z.string()),
+    hobbies: z.array(z.string()),
+    beliefs: z.array(z.string()),
+    values: z.array(z.string())
 })
 
 export const PersonSchema = z.object({
     id: z.string().uuid().describe("Unique ID"),
-    personalInformation: PersonalInformationSchema.optional(),
-    attributes: AttributesSchema.optional(),
-    physicalCharacteristics: PhysicalCharacteristicsSchema.optional(),
-    digitalFootprint: DigitalFootprintSchema.optional(),
+    personalInformation: PersonalInformationSchema,
+    attributes: AttributesSchema,
+    physicalCharacteristics: PhysicalCharacteristicsSchema,
 
-    relationships: PersonRelationshipsSchema.optional(),
-    education: EducationsSchema.optional(),
-    employment: EmploymentsSchema.optional(),
-    residences: ResidencesSchema.optional(),
-    assets: AssetsSchema.optional(),
+    relationships: PersonRelationshipsSchema,
+    education: EducationsSchema,
+    employment: EmploymentsSchema,
+    residences: ResidencesSchema,
+    assets: AssetsSchema,
+    events: EventsSchema,
 });
 // Infer the TypeScript type from the schema
 export type Person = z.infer<typeof PersonSchema>;
