@@ -4,26 +4,20 @@ import {type Firestore, getFirestore} from "firebase/firestore";
 import {initializeApp} from "firebase/app";
 import {cors} from "hono/cors";
 import {FirebaseOptions} from "@firebase/app";
-import {transcribe} from "./transcribe/transcribe";
-import {ImplicitArrayBuffer} from "node:buffer";
-import {promptTopic} from "./prompting/promptTopic";
-import {promptPerson, promptPersonTopic} from "./prompting/promptPerson";
-import {usePersonService} from "./services/person";
-import {useTranscriptionsService} from "./services/transcriptions";
-import {Person} from "./schemas/Person";
 import {PodcastsRouter} from "./routes/podcastsRouter";
-import {Topic} from "./schemas/Checklist";
-import {calculateTopicScore} from "./util/calculateTopicScore";
-import {promptPersonQuestion} from "./prompting/promptPersonQuestion";
-import VAR from "webrtcvad"
-import VAD from "webrtcvad";
-import fs from "fs";
 import {PromptRouter} from "./routes/promptRouter";
-import { PersonRouter } from "./routes/personRouter";
+import {PersonRouter} from "./routes/personRouter";
 
 interface VoiceSegment {
     startTime: number;
     endTime: number;
+}
+
+// Type for Hono context variables
+type Variables = {
+    db: Firestore;
+    userId: string;
+    firebaseApp: any;
 }
 
 // Initialize Firebase
@@ -33,7 +27,6 @@ const firebaseConfig: FirebaseOptions = {
 }
 const firebaseApp = initializeApp(firebaseConfig)
 const db: Firestore = getFirestore(firebaseApp);
-const defaultUserId: string = "test"
 
 // Initialize Hono
 const app = new Hono<{ Variables: { db: Firestore } }>();
@@ -47,13 +40,13 @@ app.use(cors({
 app.use("*", async (c: Context, next) => {
     c.set("firebaseApp", firebaseApp);
     c.set("db", db);
-    c.set("userId", defaultUserId)
+    const userId = c.req.header("userId")
+    c.set("userId", userId);
     await next();
 });
 app.route("/podcasts", PodcastsRouter)
 app.route("/prompt", PromptRouter)
-app.route("/person", PersonRouter)
-
+app.route("/persons", PersonRouter)
 
 
 const port = process.env.PORT || 3000;

@@ -86,7 +86,7 @@ function formDataFromFloat32(data: Float32Array): FormData {
 
 async function sendStreamedData(data: Float32Array) {
   const formData = formDataFromFloat32(data)
-  const result = await axios.post(
+  const result = await apiClient.post(
       "http://localhost:3000/prompt/live",
       formData,
       {
@@ -110,7 +110,7 @@ async function sendStreamedData(data: Float32Array) {
 
 async function promptPerson(data: Float32Array) {
   const formData = formDataFromFloat32(data)
-  const result = await axios.post(
+  const result = await apiClient.post(
       "http://localhost:3000/prompt",
       formData,
       {

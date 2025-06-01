@@ -2,7 +2,7 @@ export interface Podcast {
     text: PodcastText[];
     chapters: PodcastChapter[];
     summary: string;
-    duration: number;
+    duration: "short"|"medium"| "long";
     topic: string;
     userId: string;
     createdAt: Date;

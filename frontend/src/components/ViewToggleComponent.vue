@@ -1,5 +1,5 @@
 <template>
-  <nav class="flex justify-center p-4">
+  <nav class="flex justify-center p-4 mx-auto">
     <div class="inline-flex rounded-lg border border-gray-200 bg-gray-50 p-1">
       <button
           v-for="view in AppView"

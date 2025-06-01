@@ -14,7 +14,7 @@ Act as a professional writer for a podcast about a specific person's life.
 * **Target Audience: Relatives of the person.
 * **Overall Tone/Feel: Cheerful, Happy, Nostalgic.
 * **Purpose of the Podcast: Preserving memories of the person the podcast is about
-* **The Podcast should be recorded between two hosts
+* **The Podcast should be recorded between two hosts. Invent names for the hosts. Dont use placeholders for their names.
 * 
 ---
 

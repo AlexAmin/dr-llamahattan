@@ -1,4 +1,5 @@
 import axios from 'axios';
+import {useAppStore} from "./stores/app.ts";
 
 export const apiClient = axios.create({
     baseURL: 'http://localhost:3000',
@@ -8,10 +9,7 @@ export const apiClient = axios.create({
 });
 
 apiClient.interceptors.request.use((config) => {
-    const token = localStorage.getItem("auth_token");
-    if (token) {
-        config.headers.userId = "default"
-    }
+    config.headers.userId = useAppStore().activeUserId
     return config;
 }, (error) => {
     return Promise.reject(error);

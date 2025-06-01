@@ -15,13 +15,14 @@
       />
     </div>
     <div class="w-full max-w-2xl mx-auto bg-white p-4 rounded-lg shadow">
-      <h1 class="text-2xl font-bold mb-2">{{ podcast?.title }}</h1>
+      <h1 class="text-2xl font-bold mb-2">{{ podcast?.summary }}</h1>
       <audio
-          v-if="podcast?.audioUrl"
           controls
           class="w-full"
       >
-        <source :src="podcast?.audioUrl" type="audio/mpeg">
+        <source
+            :src="`https://firebasestorage.googleapis.com/v0/b/dr-lamahattan.firebasestorage.app/o/podcast-audio%2F${podcasts.selectedPodcastId}.wav?alt=media`"
+            type="audio/mpeg">
         Your browser does not support the audio element.
       </audio>
     </div>
@@ -31,7 +32,7 @@
              'p-4 rounded-lg max-w-[80%]',
              message.role === 'assistant' ? 'bg-blue-100 ml-auto' : 'bg-gray-100'
            ]">
-        {{message.speaker}}: {{ message.text }}
+        {{ message.speaker }}: {{ message.text }}
       </div>
     </div>
   </div>

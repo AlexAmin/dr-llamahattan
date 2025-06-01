@@ -24,15 +24,15 @@
         <label for="duration" class="block text-sm font-medium text-gray-700 mb-1">
           Duration (minutes): {{ formData.duration }}
         </label>
-        <input
-            type="range"
+        <select
             id="duration"
             v-model="formData.duration"
-            min="5"
-            max="20"
-            step="1"
-            class="w-full"
+            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
         >
+          <option value="short">Short (5-10 minutes)</option>
+          <option value="medium">Medium (10-15 minutes)</option>
+          <option value="long">Long (15-20 minutes)</option>
+        </select>
       </div>
 
       <LoadingSpinnerComponent v-if="generatingPodcast"/>
@@ -59,13 +59,13 @@ const generatingPodcast: Ref<boolean> = ref(false)
 const showForm = ref(false)
 const formData = ref({
   topic: '',
-  duration: 10
+  duration: 'short' as 'short' | 'medium' | 'long'
 })
 
 const generatePodcast = async () => {
   generatingPodcast.value = true
   await usePodcastsService().createPodcast(formData.value.topic, formData.value.duration)
   showForm.value = false
-  formData.value = {topic: '', duration: 10}
+  formData.value = {topic: '', duration: 'short'}
 }
 </script>

@@ -76,3 +76,8 @@ export interface Person {
     assets: Asset[];
     events: Event[];
 }
+
+export interface PersonItem {
+    id: string
+    name?: string
+}
