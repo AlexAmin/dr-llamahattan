@@ -1,4 +1,5 @@
-### Real-time Audio Processing Request
+###
+# @name Real-time Audio Processing Request
 POST http://localhost:3000/prompt/live
 Content-Type: multipart/form-data; boundary=WebAppBoundary
 
@@ -10,7 +11,8 @@ Content-Type: audio/wav
 
 ###
 
-### Create Podcast Request
+###
+# @name Create Podcast Request
 POST http://localhost:3000/podcasts
 Content-Type: application/json
 
@@ -21,7 +23,18 @@ Content-Type: application/json
 
 ###
 
-### Real-time Audio Processing Request
+###
+# @name Get Podcasts
+GET http://localhost:3000/podcasts
+Content-Type: application/json
+
+### 
+@podcastId = pMHR17AV4vxmsfuDwAz2
+# @name Get Cover Images from Storage Bucket
+GET https://firebasestorage.googleapis.com/v0/b/dr-lamahattan.firebasestorage.app/o/podcast-cover-images%2F{{podcastId}}.png?alt=media
+
+###
+# @name Real-time Audio Processing Request
 POST http://localhost:3000/prompt
 Content-Type: multipart/form-data; boundary=WebAppBoundary
 

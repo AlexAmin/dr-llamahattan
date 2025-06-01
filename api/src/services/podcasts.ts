@@ -30,7 +30,7 @@ export const usePodcastsService = (db: Firestore) => {
         return docRef.id;
     }
 
-    async function updatePodcast(id: string, podcast: Podcast) {
+    async function updatePodcast(id: string, podcast: Podcast): Promise<string> {
         const docRef = doc(db, PODCASTS_COLLECTION, id);
         await setDoc(docRef, podcast);
         return id;
