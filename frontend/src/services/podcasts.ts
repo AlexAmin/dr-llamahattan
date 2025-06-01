@@ -1,5 +1,5 @@
 import apiClient from "../apiClient.ts";
-import type {PodcastSummary, PodcastText} from "../types/Podcast.ts";
+import type {Podcast, PodcastSummary, PodcastText} from "../types/Podcast.ts";
 
 export const usePodcastsService = () => {
     async function getPodcasts(): Promise<PodcastSummary[]> {
@@ -12,12 +12,32 @@ export const usePodcastsService = () => {
         }
     }
 
+    async function getPodcast(id: string): Promise<Podcast | undefined> {
+        try {
+            const response = await apiClient.get<Podcast>("/podcasts/" + id);
+            return response.data;
+        } catch (error) {
+            console.error("Error fetching podcasts:", error);
+            return undefined
+        }
+    }
+
+    async function deletePodcast(id: string) {
+        try {
+            await apiClient.delete("/podcasts/" + id);
+        } catch (error) {
+            console.error("Error deleting podcasts:", error);
+        }
+    }
+
     async function createPodcast(topic: string, duration: number) {
         const response = await apiClient.post<PodcastText[]>("/podcasts", {topic, duration})
         return response.data;
     }
 
     return {
+        deletePodcast,
+        getPodcast,
         getPodcasts,
         createPodcast
     }

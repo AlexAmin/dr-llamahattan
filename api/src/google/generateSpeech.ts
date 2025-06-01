@@ -6,11 +6,9 @@ import {PodcastText} from "../schemas/PodcastText";
 import mime from "mime";
 import {FirebaseOptions} from "@firebase/app";
 
-const CoverImagePrompt = loadTextFile("CoverImagePrompt.md")
-
 async function saveBinaryFile(fileName: string, content: Buffer, mimeType: string, app: FirebaseApp): Promise<string> {
     const storage = getStorage(app);
-    const storageRef = ref(storage, `podcast-cover-images/${fileName}`);
+    const storageRef = ref(storage, `podcast-audio/${fileName}`);
     const metadata = {
         contentType: mimeType,
     };
@@ -55,18 +53,15 @@ export async function generateSpeech(podcastId: string, app: FirebaseApp, text: 
         },
     };
     const model = 'gemini-2.5-flash-preview-tts';
-    const contents = [
-        {
-            role: 'user',
-            parts: [
-                {
-                    text: `Read aloud in a warm, welcoming tone
-                    ${text.map((item) => `${item.speaker}: ${item.text}`).join("\n\n")}
-                    `
-                },
-            ],
-        },
-    ];
+    console.log("Generating audio for", text.length, "texts")
+    const contents = [{
+        role: "user",
+        parts:
+            text.map((item) => {
+                return {text: `${item.speaker}: ${item.text}`}
+            })
+    }]
+
 
     const response = await ai.models.generateContentStream({
         model,
@@ -75,6 +70,7 @@ export async function generateSpeech(podcastId: string, app: FirebaseApp, text: 
     });
     let fileIndex = 0;
     for await (const chunk of response) {
+        console.log("audio chunk")
         if (!chunk.candidates || !chunk.candidates[0].content || !chunk.candidates[0].content.parts) {
             continue;
         }
@@ -88,8 +84,6 @@ export async function generateSpeech(podcastId: string, app: FirebaseApp, text: 
                 buffer = convertToWav(inlineData.data || '', inlineData.mimeType || '');
             }
             return saveBinaryFile(podcastId + ".wav", buffer, "audio/wav", app);
-        } else {
-            console.log(chunk.text);
         }
     }
     return undefined

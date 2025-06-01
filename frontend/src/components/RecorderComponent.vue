@@ -1,5 +1,5 @@
 <template>
-  <div class="flex flex-col max-w-7xl mx-auto">
+  <div class="flex flex-col max-w-3xl mx-auto my-auto">
     <div class="flex flex-row items-center justify-center
                 transition-all duration-300 ease-in-out
                 rounded-full overflow-hidden w-full
@@ -17,16 +17,16 @@
       }"
       >
         <div v-if="isRecording"
-             class="absolute w-3 h-3 rounded-full bg-red-500 animate-pulse"/>
+             class="absolute w-3 h-3 rounded-full bg-red-500 animate-pulse text-2xl"/>
         <PhStop
             v-if="isRecording"
-            class="text-white"
+            class="text-white h-10 w-10"
             :class="{
             'animate-pulse': isRecording
           }"/>
         <PhMicrophone
             v-else
-            class="text-white"
+            class="text-white h-10 w-10"
             :class="{
             'animate-pulse': isRecording
           }"
@@ -34,7 +34,7 @@
         />
       </div>
       <div v-if="question && question.length > 0" class="flex flex-row mr-auto p-4">
-        <span>{{ question }}</span>
+        <span class="text-2xl font-light pl-1 pr-3">{{ question }}</span>
       </div>
     </div>
   </div>
@@ -49,14 +49,6 @@ import {recordFromMic} from "@/util/mic.ts";
 import {Checklist} from "@/types/Checklist.ts";
 import apiClient from "@/apiClient.ts";
 
-const props = defineProps<{
-  modelValue: any,
-  schema: string
-}>()
-const emit = defineEmits<{
-  "update:modelValue": [value: any],
-  "feedback": [value: any]
-}>()
 const isRecording = ref(false)
 const checklist: Ref<Checklist | undefined> = ref(undefined)
 const topic: Ref<string> = ref("")

@@ -1,4 +1,4 @@
-import {collection, doc, Firestore, getDoc, getDocs, query, setDoc, where} from "firebase/firestore";
+import {collection, deleteDoc, doc, Firestore, getDoc, getDocs, query, setDoc, where} from "firebase/firestore";
 import {Podcast} from "../schemas/Podcast";
 import {PodcastSummary} from "../schemas/PodcastSummary";
 
@@ -23,6 +23,11 @@ export const usePodcastsService = (db: Firestore) => {
         return docSnap.exists() ? docSnap.data() as Podcast : undefined;
     }
 
+    async function deletePodcast(id: string) {
+        const docRef = doc(db, PODCASTS_COLLECTION, id);
+        await deleteDoc(docRef)
+    }
+
     async function addPodcast(podcast: Podcast) {
         const collectionRef = collection(db, PODCASTS_COLLECTION);
         const docRef = doc(collectionRef);
@@ -37,6 +42,7 @@ export const usePodcastsService = (db: Firestore) => {
     }
 
     return {
+        deletePodcast,
         getPodcasts,
         getPodcast,
         addPodcast,

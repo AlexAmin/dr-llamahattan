@@ -23,6 +23,24 @@ PodcastsRouter.get("/", async (c: Context, next) => {
 })
 
 
+PodcastsRouter.get("/:id", async (c: Context, next) => {
+    const db: Firestore = c.get("db")
+    const userId = c.get("userId")
+    const podcastId = c.req.param("id")
+    const podcasts = await usePodcastsService(db).getPodcast(podcastId)
+    return c.json(podcasts)
+})
+
+PodcastsRouter.delete("/:id", async (c: Context, next) => {
+    const db: Firestore = c.get("db")
+    const userId = c.get("userId")
+    const podcastId = c.req.param("id")
+    const podcasts = await usePodcastsService(db).deletePodcast(podcastId)
+
+    return c.json(podcasts)
+})
+
+
 PodcastsRouter.post("/", async (c: Context, next) => {
     const db: Firestore = c.get("db")
     const firebaseApp: FirebaseApp = c.get("firebaseApp")

@@ -19,6 +19,7 @@ import VAR from "webrtcvad"
 import VAD from "webrtcvad";
 import fs from "fs";
 import {PromptRouter} from "./routes/promptRouter";
+import { PersonRouter } from "./routes/personRouter";
 
 interface VoiceSegment {
     startTime: number;
@@ -51,6 +52,7 @@ app.use("*", async (c: Context, next) => {
 });
 app.route("/podcasts", PodcastsRouter)
 app.route("/prompt", PromptRouter)
+app.route("/person", PersonRouter)
 
 
 
