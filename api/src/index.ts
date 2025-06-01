@@ -1,19 +1,23 @@
 import {serve} from "@hono/node-server";
-import {Hono} from "hono";
+import {Context, Hono} from "hono";
 import {type Firestore, getFirestore} from "firebase/firestore";
 import {initializeApp} from "firebase/app";
 import {cors} from "hono/cors";
 import {FirebaseOptions} from "@firebase/app";
 import {transcribe} from "./transcribe/transcribe";
 import {ImplicitArrayBuffer} from "node:buffer";
-import fs from "fs";
 import {promptChecklist} from "./prompting/promptChecklist";
 import {promptPerson} from "./prompting/promptPerson";
+import {usePersonService} from "./services/person";
+import {useTranscriptionsService} from "./services/transcriptions";
+import {Person} from "./schemas/Person";
+import {PodcastsRouter} from "./routes/podcastsRouter";
 
 // Initialize Firebase
 const firebaseConfig: FirebaseOptions = {projectId: process.env.FIREBASE_PROJECT_ID}
 const firebaseApp = initializeApp(firebaseConfig)
 const db: Firestore = getFirestore(firebaseApp);
+const defaultUserId: string = "test"
 
 // Initialize Hono
 const app = new Hono<{ Variables: { db: Firestore } }>();
@@ -24,10 +28,12 @@ app.use(cors({
     exposeHeaders: []
 }));
 
-app.use("*", async (c, next) => {
+app.use("*", async (c: Context, next) => {
     c.set("db", db);
+    c.set("userId", defaultUserId)
     await next();
 });
+app.route("/podcasts", PodcastsRouter)
 
 app.post("/prompt/live", async (c, next) => {
     const formData = await c.req.formData();
@@ -35,21 +41,32 @@ app.post("/prompt/live", async (c, next) => {
     if (!audioFile || !(audioFile instanceof File)) {
         return c.text("Missing or invalid audio file", 400);
     }
+
     const audioBuffer: Buffer<ImplicitArrayBuffer<ArrayBuffer>> = Buffer.from(await audioFile.arrayBuffer());
-    const transcription = await transcribe(audioBuffer)
-    const result = await promptChecklist(transcription)
+    const [person, transcription] = await Promise.all([
+        usePersonService(db).getPerson(defaultUserId),
+        transcribe(audioBuffer)
+    ])
+    const result = await promptChecklist(transcription, person)
     return c.json(result)
 })
 
-app.post("/prompt", async(c, next)=>{
+app.post("/prompt", async (c, next) => {
     const formData = await c.req.formData();
     const audioFile = formData.get("file");
     if (!audioFile || !(audioFile instanceof File)) {
         return c.text('Missing or invalid audio file', 400);
     }
     const audioBuffer: Buffer<ImplicitArrayBuffer<ArrayBuffer>> = Buffer.from(await audioFile.arrayBuffer());
-    const transcription = await transcribe(audioBuffer)
-    const result = await promptPerson(transcription)
+    const [person, transcription] = await Promise.all([
+        usePersonService(db).getPerson(defaultUserId),
+        transcribe(audioBuffer)
+    ])
+    if (!transcription) return c.status(500)
+    // noinspection ES6MissingAwait - no need to wait
+    useTranscriptionsService(db).addTranscription(transcription, defaultUserId)
+    const result: Person = await promptPerson(transcription, person)
+    usePersonService(db).setPerson(defaultUserId, result)
     return c.json(result)
 })
 

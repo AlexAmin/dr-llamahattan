@@ -2,23 +2,16 @@ import {z} from 'zod';
 
 // Reusable Schemas
 const DateStringSchema = z.string()
-const AddressSchema = z.object({
-    street: z.string(),
-    city: z.string(),
-    state: z.string(),
-    zip: z.string(),
-    country: z.string(),
-})
 
 const PeriodSchema = z.object({
     startDate: DateStringSchema,
     endDate: DateStringSchema.describe("End date can be null for current events"),
 });
 
-
 export const PersonRelationshipSchema = z.object({
+    name: z.string().describe("Name of the other person in this relationship"),
     type: z.enum(['Parent', 'Child', 'Spouse', 'Partner', 'Sibling', 'Friend', 'Professional', 'Other']),
-    details: z.string().describe("e.g. married on, colleague at, friends since, etc. "),
+    details: z.string().describe("Long text detailing the relationship between the user and this person"),
 }).strict()
 export const PersonRelationshipsSchema = z.array(PersonRelationshipSchema)
 
@@ -40,7 +33,7 @@ export const EmploymentSchema = z.object({
 });
 export const EmploymentsSchema = z.array(EmploymentSchema)
 export const ResidenceSchema = z.object({
-    address: AddressSchema,
+    address: z.string(),
     period: PeriodSchema,
 });
 export const ResidencesSchema = z.array(ResidenceSchema)
@@ -71,7 +64,7 @@ export const PersonalInformationSchema = z.object({
     currentName: z.string(),
     birthName: z.string(),
     birthDate: DateStringSchema,
-    birthPlace: AddressSchema,
+    birthPlace: z.string(),
     gender: z.enum(['Male', 'Female', 'Other']),
 })
 

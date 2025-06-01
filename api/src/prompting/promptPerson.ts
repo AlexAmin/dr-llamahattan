@@ -26,32 +26,40 @@ const promptResidencesSchema = async (transcript: string, data: Person) => data.
 const promptAssetsSchema = async (transcript: string, data: Person) => data.assets = await prompt(AssetsSchema, transcript, data)
 const promptEventsSchema = async (transcript: string, data: Person) => data.events = await prompt(EventsSchema, transcript, data)
 
-export async function promptPerson(transcription: string) {
-    const data: Person = {}
+export async function promptPerson(transcription: string, person?: Person): Promise<Person> {
+    const data: Person = structuredClone(person || {})
+    console.log("Prompting person")
     await Promise.all([
+        promptPersonRelationshipsSchema(transcription, data),
         promptPersonalInformationSchema(transcription, data),
         promptAttributesSchema(transcription, data),
         promptPhysicalCharacteristicsSchema(transcription, data),
-        promptPersonRelationshipsSchema(transcription, data),
         promptEducationsSchema(transcription, data),
         promptEmploymentsSchema(transcription, data),
         promptResidencesSchema(transcription, data),
         promptAssetsSchema(transcription, data),
         promptEventsSchema(transcription, data)
     ])
-    console.log(data)
+    return data
 }
 
 async function prompt(schema: any, transcript: string, data?: Person) {
+    const llmSchema = toLLMSchema(schema)
+    const injectedPrompt = structuredClone(promptString)
+        .replace("{{PERSON}}", data ? JSON.stringify(data) : "")
+
     const createChatCompletionResponse = await llamaClient.chat.completions.create({
+        max_completion_tokens: 16000,
+        temperature: 0.1,
+        stream: false,
         messages: [
-            {role: "system", content: promptString},
+            {role: "system", content: injectedPrompt},
             {role: "user", content: transcript}
         ],
         response_format: {
             type: "json_schema",
             // @ts-expect-error - invalid schema def by meta
-            json_schema: {schema: toLLMSchema(schema)}
+            json_schema: {schema: llmSchema}
         },
         model: "Llama-4-Maverick-17B-128E-Instruct-FP8",
     });

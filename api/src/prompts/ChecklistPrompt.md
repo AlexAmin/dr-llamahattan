@@ -22,3 +22,6 @@ You are an analyst, analyzing what information the user still needs to supply to
 # Schema
 
 ```{{SCHEMA}}```
+
+
+{{PERSON_APPENDIX}}

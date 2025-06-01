@@ -1,0 +1,54 @@
+import {Context, Hono} from "hono";
+import {Firestore} from "firebase/firestore";
+import {usePodcastsService} from "../services/podcasts";
+import {promptPodcast} from "../prompting/promptPodcast";
+import {usePersonService} from "../services/person";
+import {promptPodcastSummary} from "../prompting/promptPodcastSummary";
+import {Podcast} from "../schemas/Podcast";
+import {PodcastChapter} from "../schemas/PodcastChapter";
+import {promptPodcastChapters} from "../prompting/promptPodcastChapters";
+import {PodcastText} from "../schemas/PodcastText";
+
+export const PodcastsRouter = new Hono()
+
+PodcastsRouter.get("/", async (c: Context, next) => {
+    const db: Firestore = c.get("db")
+    const userId = c.get("userId")
+    const podcasts = await usePodcastsService(db).getPodcasts(userId)
+    return c.json(podcasts)
+})
+
+
+PodcastsRouter.post("/", async (c: Context, next) => {
+    const db: Firestore = c.get("db")
+    const userId = c.get("userId")
+    const body = await c.req.json()
+    const duration = body.duration
+    const topic = body.topic
+
+    console.log("Loading person")
+    const person = await usePersonService(db).getPerson(userId)
+    console.log("Generating chapters")
+    const chapters: PodcastChapter[] = await promptPodcastChapters(topic, duration, person)
+    console.log("Generating podcast")
+    const podcastTexts: PodcastText[][] = await Promise.all(
+        chapters.map((chapter, index) =>
+            promptPodcast(topic, duration, person, chapter, index, chapters.length))
+    )
+    const podcastText: PodcastText[] = podcastTexts.flat()
+    console.log("Generating summary")
+    const summary: string = await promptPodcastSummary(podcastText)
+    const podcast: Podcast = {
+        chapters: chapters,
+        text: podcastText,
+        summary: summary,
+        duration: duration,
+        coverURL: "",
+        createdAt: new Date(),
+        topic: topic,
+        userId,
+    }
+    console.log("Saving podcast")
+    await usePodcastsService(db).addPodcast(podcast)
+    return c.json(podcast)
+})
