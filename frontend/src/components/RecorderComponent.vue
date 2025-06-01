@@ -1,11 +1,15 @@
 <template>
-  <div class="flex flex-col max-w-5xl mx-auto my-auto pr-8">
-    <div class="flex flex-row items-center justify-center
+  <div class="flex flex-col max-w-5xl mx-auto pr-8 text-center">
+    <h2 class="text-4xl font-bold text-gray-800 dark:text-gray-200 mt-36">Voice Recorder</h2>
+    <p class="text-gray-600 dark:text-gray-400">
+      Record your life stories and memories. Tell us about you life, your experiences and what makes you, you.</p>
+    <div class="flex flex-row items-center justify-center mt-48
                 transition-all duration-300 ease-in-out
                 rounded-full overflow-hidden w-full
                 shadow-xl
               bg-app-100 dark:bg-app-dark"
          :class="[isRecording ? 'w-96':'w-12']">
+
       <div
           @click="()=>toggleRecording()"
           class="relative flex flex-col justify-center items-center
