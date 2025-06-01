@@ -8,4 +8,4 @@ RUN yarn install
 RUN yarn build
 # Run
 EXPOSE 8080
-CMD [ "node", "lib/src/app.js" ]
+CMD [ "node", "lib/index.js" ]
