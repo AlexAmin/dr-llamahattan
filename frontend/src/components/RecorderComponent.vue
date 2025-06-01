@@ -47,6 +47,7 @@ import {type AxiosResponse} from 'axios'
 import {encodeWAVChunk} from "@/util/wav.ts";
 import {recordFromMic} from "@/util/mic.ts";
 import apiClient from "@/apiClient.ts";
+import {usePodcastsStore} from "@/stores/podcasts.ts";
 
 const isRecording = ref(false)
 const topic: Ref<string> = ref("")

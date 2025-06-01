@@ -65,6 +65,7 @@ import {PhPlus, PhX} from "@phosphor-icons/vue";
 import {type Ref, ref} from "vue";
 import {usePodcastsService} from "@/services/podcasts.ts";
 import LoadingSpinnerComponent from "@/components/LoadingSpinnerComponent.vue";
+import {usePodcastsStore} from "@/stores/podcasts.ts";
 
 const languageStrings = {
   "en-US": "English",
@@ -83,6 +84,7 @@ const formData = ref({
 const generatePodcast = async () => {
   generatingPodcast.value = true
   await usePodcastsService().createPodcast(formData.value.language, formData.value.topic, formData.value.duration)
+  await usePodcastsStore().load()
   showForm.value = false
   formData.value = {topic: '', duration: 'short', language: Object.keys(languageStrings)[0]}
 }

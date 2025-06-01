@@ -17,19 +17,7 @@ async function saveBinaryFile(fileName: string, content: Buffer, mimeType: strin
 }
 
 export async function generateSpeech(podcastId: string, app: FirebaseApp, text: PodcastText[]) {
-    console.log("Generating audio for", text.length, "texts")
-    const chunks: PodcastText[][] = [];
-    for (let i = 0; i < text.length; i += 10) {
-        chunks.push(text.slice(i, i + 10));
-    }
-    const resultBuffers: Awaited<Buffer<ArrayBuffer> | undefined>[] = await Promise.all(chunks.map(promptAudio))
-    const mergedBuffer: Buffer<ArrayBufferLike> = Buffer.concat(resultBuffers.filter(buffer => buffer !== undefined));
-    fs.writeFileSync("merged.wav", mergedBuffer);
-    return await saveBinaryFile(podcastId + ".wav", mergedBuffer, "audio/wav", app);
-}
-
-async function promptAudio(chunk: PodcastText[], index: number) {
-    const speakers: string[] = [...new Set(chunk.map((item) => item.speaker))]
+    const speakers: string[] = [...new Set(text.map((item) => item.speaker))]
     const voices = ["Zephyr", "Puck", "Charon", "Kore", "Fenrir", "Leda"]
     let voiceConfigs = speakers.map((item, index) => {
         return {
@@ -65,37 +53,41 @@ async function promptAudio(chunk: PodcastText[], index: number) {
         },
     };
     const model = 'gemini-2.5-flash-preview-tts';
+    console.log("Generating audio for", text.length, "texts")
     const contents = [{
         role: "user",
-        parts: chunk.map((item) => {
-            return {text: `${item.speaker}: ${item.text}`}
-        })
+        parts:
+            text.map((item) => {
+                return {text: `${item.speaker}: ${item.text}`}
+            })
     }]
+
 
     const response = await ai.models.generateContentStream({
         model,
         config,
         contents,
     });
-    for await (const responseChun of response) {
-        console.log("audio chunk", index)
-        if (!responseChun.candidates || !responseChun.candidates[0].content || !responseChun.candidates[0].content.parts) {
+    let fileIndex = 0;
+    for await (const chunk of response) {
+        console.log("audio chunk")
+        if (!chunk.candidates || !chunk.candidates[0].content || !chunk.candidates[0].content.parts) {
             continue;
         }
-        if (responseChun.candidates?.[0]?.content?.parts?.[0]?.inlineData) {
-            const inlineData = responseChun.candidates[0].content.parts[0].inlineData;
+        if (chunk.candidates?.[0]?.content?.parts?.[0]?.inlineData) {
+            const fileName = `ENTER_FILE_NAME_${fileIndex++}`;
+            const inlineData = chunk.candidates[0].content.parts[0].inlineData;
             let fileExtension = mime.getExtension(inlineData.mimeType || '');
-            let buffer: Buffer<ArrayBuffer> = Buffer.from(inlineData.data || '', 'base64');
+            let buffer = Buffer.from(inlineData.data || '', 'base64');
             if (!fileExtension) {
                 fileExtension = 'wav';
                 buffer = convertToWav(inlineData.data || '', inlineData.mimeType || '');
             }
-            return buffer
+            return saveBinaryFile(podcastId + ".wav", buffer, "audio/wav", app);
         }
     }
     return undefined
 }
-
 interface WavConversionOptions {
     numChannels: number,
     sampleRate: number,
