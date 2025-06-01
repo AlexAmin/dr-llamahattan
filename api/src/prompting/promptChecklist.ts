@@ -4,6 +4,7 @@ import {toLLMSchema} from "../llama/toLLMSchema";
 import {createItemsSchema} from "../llama/createItemsSchema";
 import {ChecklistSchema} from "../schemas/Checklist";
 import {Person, PersonSchema} from "../schemas/Person";
+import {MessageTextContentItem} from "llama-api-client/src/resources/chat/chat";
 
 const prompt: string = loadTextFile("ChecklistPrompt.md")
 const personAppendix: string = loadTextFile("CheckListPromptPersonAppendix.md")
@@ -26,7 +27,7 @@ export async function promptChecklist(transcription: string, person?: Person) {
         },
         model: "Llama-4-Scout-17B-16E-Instruct-FP8",
     });
-    return JSON.parse(createChatCompletionResponse.completion_message.content["text"]).data
+    return JSON.parse((createChatCompletionResponse.completion_message.content as MessageTextContentItem).text).data
 }
 
 if (require.main === module) {

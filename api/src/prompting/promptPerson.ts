@@ -13,6 +13,7 @@ import {
     ResidencesSchema
 } from "../schemas/Person";
 import {toLLMSchema} from "../llama/toLLMSchema";
+import {MessageTextContentItem} from "llama-api-client/src/resources/chat/chat";
 
 const promptString: string = loadTextFile("PersonPrompt.md")
 
@@ -27,7 +28,7 @@ const promptAssetsSchema = async (transcript: string, data: Person) => data.asse
 const promptEventsSchema = async (transcript: string, data: Person) => data.events = await prompt(EventsSchema, transcript, data)
 
 export async function promptPerson(transcription: string, person?: Person): Promise<Person> {
-    const data: Person = structuredClone(person || {})
+    const data: Person = structuredClone(person || {} as unknown as Person)
     console.log("Prompting person")
     await Promise.all([
         promptPersonRelationshipsSchema(transcription, data),
@@ -63,7 +64,7 @@ async function prompt(schema: any, transcript: string, data?: Person) {
         },
         model: "Llama-4-Maverick-17B-128E-Instruct-FP8",
     });
-    let result = JSON.parse(createChatCompletionResponse.completion_message.content["text"])
+    let result = JSON.parse((createChatCompletionResponse.completion_message.content as MessageTextContentItem).text)
     if (result.data) result = result.data
     return result
 }

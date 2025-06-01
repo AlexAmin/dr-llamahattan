@@ -7,7 +7,6 @@ export const PodcastSchema = z.object({
     chapters: z.array(PodcastChapterSchema),
     summary: z.string(),
     duration: z.number(),
-    coverURL: z.string(),
     topic: z.string(),
     userId: z.string(),
     createdAt: z.date(),

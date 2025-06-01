@@ -10,6 +10,7 @@ import {promptPodcastChapters} from "../prompting/promptPodcastChapters";
 import {PodcastText} from "../schemas/PodcastText";
 import {generateCoverImage} from "../google/generateCoverImage";
 import {FirebaseApp} from "firebase/app";
+import {Person} from "../schemas/Person";
 
 export const PodcastsRouter = new Hono()
 
@@ -30,7 +31,8 @@ PodcastsRouter.post("/", async (c: Context, next) => {
     const topic = body.topic
 
     console.log("Loading person")
-    const person = await usePersonService(db).getPerson(userId)
+    const person: Person | undefined = await usePersonService(db).getPerson(userId)
+    if(!person) return c.status(500)
     console.log("Generating chapters")
     const chapters: PodcastChapter[] = await promptPodcastChapters(topic, duration, person)
     console.log("Generating podcast")

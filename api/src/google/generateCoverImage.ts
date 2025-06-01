@@ -61,6 +61,7 @@ export async function generateCoverImage(podcastId: string, chapters: PodcastCha
             return saveBinaryFile(`${podcastId}.${fileExtension}`, buffer, inlineData.mimeType || '', app);
         }
     }
+    return undefined
 }
 
 

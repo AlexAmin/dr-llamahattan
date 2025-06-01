@@ -4,6 +4,7 @@ import {Person} from "../schemas/Person";
 import {toLLMSchema} from "../llama/toLLMSchema";
 import {PodcastChapterGenerationSchema, PodcastChapterSchema} from "../schemas/PodcastChapter";
 import {SAMPLE_USER} from "../demo/sampleUserData";
+import {MessageTextContentItem} from "llama-api-client/src/resources/chat/chat";
 
 const prompt: string = loadTextFile("PodcastChapterPrompt.md")
 
@@ -26,7 +27,7 @@ export async function promptPodcastChapters(topic: string, durationMinutes: numb
         },
         model: "Llama-4-Scout-17B-16E-Instruct-FP8",
     });
-    const data = JSON.parse(createChatCompletionResponse.completion_message.content["text"])
+    const data = JSON.parse((createChatCompletionResponse.completion_message.content as MessageTextContentItem).text)
     return data.chapters
 }
 

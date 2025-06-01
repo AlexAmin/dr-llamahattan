@@ -3,10 +3,10 @@ import {doc, getDoc, setDoc} from "firebase/firestore";
 import {Person} from "../schemas/Person";
 
 export const usePersonService = (db: Firestore) => {
-    async function getPerson(id: string) {
+    async function getPerson(id: string): Promise<Person | undefined> {
         const docRef = doc(db, "persons", id);
         const result = await getDoc(docRef)
-        return result.data()
+        return result.data() as Person | undefined;
     }
 
     function setPerson(id: string, data: Person) {

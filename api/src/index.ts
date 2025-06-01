@@ -48,6 +48,7 @@ app.post("/prompt/live", async (c, next) => {
         usePersonService(db).getPerson(defaultUserId),
         transcribe(audioBuffer)
     ])
+    if(!transcription) return c.status(500)
     const result = await promptChecklist(transcription, person)
     return c.json(result)
 })
