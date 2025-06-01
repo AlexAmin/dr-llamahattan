@@ -78,16 +78,16 @@ export const AttributesSchema = z.object({
 
 export const PersonSchema = z.object({
     id: z.string().uuid().describe("Unique ID"),
-    personalInformation: PersonalInformationSchema,
-    attributes: AttributesSchema,
-    physicalCharacteristics: PhysicalCharacteristicsSchema,
-
-    relationships: PersonRelationshipsSchema,
-    education: EducationsSchema,
-    employment: EmploymentsSchema,
-    residences: ResidencesSchema,
-    assets: AssetsSchema,
-    events: EventsSchema,
+    personalInformation: PersonalInformationSchema.describe("Basic personal information including name, birth details, and gender"),
+    attributes: AttributesSchema.describe("Personal characteristics including skills, hobbies, beliefs, and values"),
+    physicalCharacteristics: PhysicalCharacteristicsSchema.describe("Physical attributes like height, weight, and appearance"),
+    relationships: PersonRelationshipsSchema.describe("List of relationships with other people"),
+    education: EducationsSchema.describe("Educational history and academic achievements"),
+    employment: EmploymentsSchema.describe("Employment history and work experience"),
+    residences: ResidencesSchema.describe("History of places where the person has lived"),
+    assets: AssetsSchema.describe("List of owned assets and their details"),
+    events: EventsSchema.describe("Significant life events and their details"),
 });
 // Infer the TypeScript type from the schema
 export type Person = z.infer<typeof PersonSchema>;
+

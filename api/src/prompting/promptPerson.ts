@@ -41,6 +41,7 @@ export async function promptPerson(transcription: string, person?: Person): Prom
         promptAssetsSchema(transcription, data),
         promptEventsSchema(transcription, data)
     ])
+    console.log("Prompted person")
     return data
 }
 

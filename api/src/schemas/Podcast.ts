@@ -13,3 +13,4 @@ export const PodcastSchema = z.object({
 });
 
 export type Podcast = z.infer<typeof PodcastSchema>;
+

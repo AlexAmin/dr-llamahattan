@@ -1,9 +1,27 @@
 import {z} from 'zod';
 
-export const ChecklistSchema = z.object({
-    path: z.string().describe("path within the Person schema as dot notation"),
-    missing: z.boolean().describe("Can the property at this value be filled with the data provided by the user?"),
-    question: z.string().describe("A direct question to the user to provide more data. Example: \"Tell me more about your job at the supermarket\", \"Tell me about your father\", etc."),
+
+export enum Quality {
+    good = "good",
+    bad = "bad",
+    missing = "missing",
+}
+
+export enum Topic {
+    PersonalInformation = "personalInformation",
+    Attributes = "attributes",
+    PhysicalCharacteristics = "physicalCharacteristics",
+    Relationships = "relationships",
+    Education = "education",
+    Employment = "employment",
+    Residences = "residences",
+    Assets = "assets",
+    Events = "events",
+    Other = "other"
+}
+
+export const TopicSchema = z.object({
+    topic: z.nativeEnum(Topic).describe("What is the user currently talking about?")
 });
 
-export type Checklist = z.infer<typeof ChecklistSchema>;
+export type Checklist = z.infer<typeof TopicSchema>;
