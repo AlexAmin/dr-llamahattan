@@ -8,6 +8,8 @@ import {Podcast} from "../schemas/Podcast";
 import {PodcastChapter} from "../schemas/PodcastChapter";
 import {promptPodcastChapters} from "../prompting/promptPodcastChapters";
 import {PodcastText} from "../schemas/PodcastText";
+import {generateCoverImage} from "../google/generateCoverImage";
+import {FirebaseApp} from "firebase/app";
 
 export const PodcastsRouter = new Hono()
 
@@ -21,6 +23,7 @@ PodcastsRouter.get("/", async (c: Context, next) => {
 
 PodcastsRouter.post("/", async (c: Context, next) => {
     const db: Firestore = c.get("db")
+    const firebaseApp: FirebaseApp = c.get("firebaseApp")
     const userId = c.get("userId")
     const body = await c.req.json()
     const duration = body.duration
@@ -43,12 +46,13 @@ PodcastsRouter.post("/", async (c: Context, next) => {
         text: podcastText,
         summary: summary,
         duration: duration,
-        coverURL: "",
         createdAt: new Date(),
         topic: topic,
         userId,
     }
     console.log("Saving podcast")
-    await usePodcastsService(db).addPodcast(podcast)
+    const id = await usePodcastsService(db).addPodcast(podcast)
+    const url = await generateCoverImage(id, chapters, firebaseApp)
+    console.log("cover image", url)
     return c.json(podcast)
 })

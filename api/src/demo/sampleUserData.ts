@@ -102,6 +102,15 @@ export const SAMPLE_USER = {
                 "startDate": "",
                 "endDate": ""
             }
+        },
+        {
+            "institution": "Midwest State University",
+            "degree": "Bachelor of Arts",
+            "fieldOfStudy": "English Literature",
+            "period": {
+                "startDate": "2010-09-01",
+                "endDate": "2014-05-15"
+            }
         }
     ],
     "attributes": {

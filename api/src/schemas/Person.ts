@@ -21,6 +21,7 @@ export const EducationSchema = z.object({
     degree: z.string(),
     fieldOfStudy: z.string(),
     period: PeriodSchema,
+    details: z.string().describe("Long text detailing the experiences and adventures of this person in this education."),
 });
 export const EducationsSchema = z.array(EducationSchema)
 

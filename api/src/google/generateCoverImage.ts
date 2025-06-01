@@ -1,41 +1,44 @@
-// To run this code you need to install the following dependencies:
-// npm install @google/genai mime
-// npm install -D @types/node
-
-import {
-    GoogleGenAI,
-} from '@google/genai';
+import {GenerateContentConfig, GoogleGenAI,} from '@google/genai';
+import {getDownloadURL, getStorage, ref, uploadBytes} from 'firebase/storage';
+import {FirebaseApp, initializeApp} from 'firebase/app';
+import {PodcastChapter} from "../schemas/PodcastChapter";
 import mime from 'mime';
-import { writeFile } from 'fs';
+import {SAMPLE_CHAPTERS} from "../demo/sampleChapterData";
+import {FirebaseOptions} from "@firebase/app";
+import {loadTextFile} from "../util/loadTextFile";
 
-function saveBinaryFile(fileName: string, content: Buffer) {
-    writeFile(fileName, content, 'utf8', (err) => {
-        if (err) {
-            console.error(`Error writing file ${fileName}:`, err);
-            return;
-        }
-        console.log(`File ${fileName} saved to file system.`);
-    });
+const CoverImagePrompt = loadTextFile("CoverImagePrompt.md")
+async function saveBinaryFile(fileName: string, content: Buffer, mimeType: string, app: FirebaseApp): Promise<string> {
+    const storage = getStorage(app);
+    const storageRef = ref(storage, `podcast-cover-images/${fileName}`);
+    const metadata = {
+        contentType: mimeType,
+    };
+    await uploadBytes(storageRef, content, metadata);
+    return await getDownloadURL(storageRef);
 }
 
-async function main() {
+export async function generateCoverImage(podcastId: string, chapters: PodcastChapter[], app: FirebaseApp) {
     const ai = new GoogleGenAI({
         apiKey: process.env.GEMINI_API_KEY,
     });
-    const config = {
-        responseModalities: [
-            'IMAGE',
-            'TEXT',
-        ],
-        responseMimeType: 'text/plain',
+    const config: GenerateContentConfig = {
+        responseModalities: ["IMAGE", "TEXT"],
+        responseMimeType: "text/plain",
     };
     const model = 'gemini-2.0-flash-preview-image-generation';
     const contents = [
         {
-            role: 'user',
+            role: "user",
+            parts: [
+                {text: CoverImagePrompt}
+            ]
+        },
+        {
+            role: "user",
             parts: [
                 {
-                    text: `INSERT_INPUT_HERE`,
+                    text: "My podcast: "+ chapters.map((item) => `${item.description}`).join(". ")
                 },
             ],
         },
@@ -52,16 +55,18 @@ async function main() {
             continue;
         }
         if (chunk.candidates?.[0]?.content?.parts?.[0]?.inlineData) {
-            const fileName = `ENTER_FILE_NAME_${fileIndex++}`;
             const inlineData = chunk.candidates[0].content.parts[0].inlineData;
             const fileExtension = mime.getExtension(inlineData.mimeType || '');
             const buffer = Buffer.from(inlineData.data || '', 'base64');
-            saveBinaryFile(`${fileName}.${fileExtension}`, buffer);
-        }
-        else {
-            console.log(chunk.text);
+            return saveBinaryFile(`${podcastId}.${fileExtension}`, buffer, inlineData.mimeType || '', app);
         }
     }
 }
 
-main();
+
+if (require.main === module) {
+    const firebaseConfig: FirebaseOptions = {projectId: process.env.FIREBASE_PROJECT_ID, storageBucket: process.env.FIREBASE_STORAGE_BUCKET}
+    const firebaseApp = initializeApp(firebaseConfig)
+    generateCoverImage("test", SAMPLE_CHAPTERS, firebaseApp)
+        .then((result) => console.log(result))
+}

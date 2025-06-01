@@ -14,7 +14,7 @@ import {Person} from "./schemas/Person";
 import {PodcastsRouter} from "./routes/podcastsRouter";
 
 // Initialize Firebase
-const firebaseConfig: FirebaseOptions = {projectId: process.env.FIREBASE_PROJECT_ID}
+const firebaseConfig: FirebaseOptions = {projectId: process.env.FIREBASE_PROJECT_ID, storageBucket: process.env.FIREBASE_STORAGE_BUCKET}
 const firebaseApp = initializeApp(firebaseConfig)
 const db: Firestore = getFirestore(firebaseApp);
 const defaultUserId: string = "test"
@@ -29,6 +29,7 @@ app.use(cors({
 }));
 
 app.use("*", async (c: Context, next) => {
+    c.set("firebaseApp",firebaseApp);
     c.set("db", db);
     c.set("userId", defaultUserId)
     await next();
