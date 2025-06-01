@@ -22,7 +22,7 @@ export async function promptTopic(transcription: string) {
             // @ts-expect-error - schema error on metas side
             json_schema: {schema: topicSchema}
         },
-        model: "Llama-4-Scout-17B-16E-Instruct-FP8",
+            model: "Cerebras-Llama-4-Scout-17B-16E-Instruct",
     });
     return JSON.parse((createChatCompletionResponse.completion_message.content as MessageTextContentItem).text).topic
 }

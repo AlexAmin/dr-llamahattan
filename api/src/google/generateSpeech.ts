@@ -1,10 +1,10 @@
 import {GoogleGenAI,} from '@google/genai';
 import {getDownloadURL, getStorage, ref, uploadBytes} from 'firebase/storage';
 import {FirebaseApp, initializeApp} from 'firebase/app';
-import {loadTextFile} from "../util/loadTextFile";
 import {PodcastText} from "../schemas/PodcastText";
 import mime from "mime";
 import {FirebaseOptions} from "@firebase/app";
+import * as fs from 'fs';
 
 async function saveBinaryFile(fileName: string, content: Buffer, mimeType: string, app: FirebaseApp): Promise<string> {
     const storage = getStorage(app);
@@ -17,7 +17,19 @@ async function saveBinaryFile(fileName: string, content: Buffer, mimeType: strin
 }
 
 export async function generateSpeech(podcastId: string, app: FirebaseApp, text: PodcastText[]) {
-    const speakers: string[] = [...new Set(text.map((item) => item.speaker))]
+    console.log("Generating audio for", text.length, "texts")
+    const chunks: PodcastText[][] = [];
+    for (let i = 0; i < text.length; i += 10) {
+        chunks.push(text.slice(i, i + 10));
+    }
+    const resultBuffers: Awaited<Buffer<ArrayBuffer> | undefined>[] = await Promise.all(chunks.map(promptAudio))
+    const mergedBuffer: Buffer<ArrayBufferLike> = Buffer.concat(resultBuffers.filter(buffer => buffer !== undefined));
+    fs.writeFileSync("merged.wav", mergedBuffer);
+    return await saveBinaryFile(podcastId + ".wav", mergedBuffer, "audio/wav", app);
+}
+
+async function promptAudio(chunk: PodcastText[], index: number) {
+    const speakers: string[] = [...new Set(chunk.map((item) => item.speaker))]
     const voices = ["Zephyr", "Puck", "Charon", "Kore", "Fenrir", "Leda"]
     let voiceConfigs = speakers.map((item, index) => {
         return {
@@ -53,37 +65,32 @@ export async function generateSpeech(podcastId: string, app: FirebaseApp, text: 
         },
     };
     const model = 'gemini-2.5-flash-preview-tts';
-    console.log("Generating audio for", text.length, "texts")
     const contents = [{
         role: "user",
-        parts:
-            text.map((item) => {
-                return {text: `${item.speaker}: ${item.text}`}
-            })
+        parts: chunk.map((item) => {
+            return {text: `${item.speaker}: ${item.text}`}
+        })
     }]
-
 
     const response = await ai.models.generateContentStream({
         model,
         config,
         contents,
     });
-    let fileIndex = 0;
-    for await (const chunk of response) {
-        console.log("audio chunk")
-        if (!chunk.candidates || !chunk.candidates[0].content || !chunk.candidates[0].content.parts) {
+    for await (const responseChun of response) {
+        console.log("audio chunk", index)
+        if (!responseChun.candidates || !responseChun.candidates[0].content || !responseChun.candidates[0].content.parts) {
             continue;
         }
-        if (chunk.candidates?.[0]?.content?.parts?.[0]?.inlineData) {
-            const fileName = `ENTER_FILE_NAME_${fileIndex++}`;
-            const inlineData = chunk.candidates[0].content.parts[0].inlineData;
+        if (responseChun.candidates?.[0]?.content?.parts?.[0]?.inlineData) {
+            const inlineData = responseChun.candidates[0].content.parts[0].inlineData;
             let fileExtension = mime.getExtension(inlineData.mimeType || '');
-            let buffer = Buffer.from(inlineData.data || '', 'base64');
+            let buffer: Buffer<ArrayBuffer> = Buffer.from(inlineData.data || '', 'base64');
             if (!fileExtension) {
                 fileExtension = 'wav';
                 buffer = convertToWav(inlineData.data || '', inlineData.mimeType || '');
             }
-            return saveBinaryFile(podcastId + ".wav", buffer, "audio/wav", app);
+            return buffer
         }
     }
     return undefined
@@ -151,7 +158,7 @@ function createWavHeader(dataLength: number, options: WavConversionOptions) {
     buffer.writeUInt32LE(sampleRate, 24);         // SampleRate
     buffer.writeUInt32LE(byteRate, 28);           // ByteRate
     buffer.writeUInt16LE(blockAlign, 32);         // BlockAlign
-    buffer.writeUInt16LE(bitsPerSample, 34);      // BitsPerSample
+    buffer.writeUInt16LE(bitsPerSample, 34);      // BitsPerSampleq
     buffer.write('data', 36);                     // Subchunk2ID
     buffer.writeUInt32LE(dataLength, 40);         // Subchunk2Size
 
@@ -164,6 +171,10 @@ if (require.main === module) {
         storageBucket: process.env.FIREBASE_STORAGE_BUCKET
     }
     const firebaseApp = initializeApp(firebaseConfig)
-    generateSpeech("test", firebaseApp, [{type: "text", speaker: "Host A", text: "Hello and welcome"}] as PodcastText[])
+    generateSpeech("test", firebaseApp, [{
+        type: "text",
+        speaker: "Host A",
+        text: "Hello and welcome"
+    }] as PodcastText[])
         .then((result) => console.log(result))
 }

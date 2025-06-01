@@ -15,7 +15,7 @@ export async function promptPodcastSummary(podcast: PodcastText[]) {
         response_format: {
             type: "text"
         },
-        model: "Llama-4-Scout-17B-16E-Instruct-FP8",
+            model: "Cerebras-Llama-4-Scout-17B-16E-Instruct",
     });
     return (createChatCompletionResponse.completion_message.content as MessageTextContentItem).text
 }
