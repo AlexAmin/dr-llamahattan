@@ -1,9 +1,15 @@
 <template>
   <div class="h-screen w-screen flex flex-col">
-    <div class="flex flex-row justify-center items-center gap-4 px-12">
+    <div class="flex flex-row justify-between items-center overflow-hidden
+                px-12 min-h-16 max-h-16 py-3
+                border-b border-app-500/30">
+      <div class="flex flex-row h-full items-center">
+        <img src="/logo.png" class="h-full"/>
+        <span class="font-semibold ml-3">Dr. Llamahattan</span>
+      </div>
       <ViewToggleComponent v-model="view"/>
       <div @click="()=>app.showUserPicker = true"
-           class="">
+           class="flex flex-row items-center gap-x-1">
         <PhUser/>
         <span>{{ app.activeUserId }}</span>
       </div>
