@@ -1,6 +1,6 @@
 export async function recordFromMic(callback: (data: Float32Array) => void): Promise<MediaRecorder> {
     try {
-        const stream = await navigator.mediaDevices.getUserMedia({audio: true})
+        const stream = await navigator.mediaDevices.getUserMedia({audio: {sampleRate: 48000, channelCount: 1, echoCancellation: true, noiseSuppression: true, autoGainControl: false}})
         const mediaRecorder = new MediaRecorder(stream, {audioBitsPerSecond: 48000, mimeType: 'audio/webm;codecs=pcm'})
         const audioChunks: Blob[] = []
 
@@ -10,7 +10,6 @@ export async function recordFromMic(callback: (data: Float32Array) => void): Pro
             const audioContext = new AudioContext();
             const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
             const float32Array = audioBuffer.getChannelData(0);
-            console.log("length", float32Array.length)
             callback(float32Array);
         }
 

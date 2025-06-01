@@ -7,14 +7,22 @@ import {FirebaseOptions} from "@firebase/app";
 import {transcribe} from "./transcribe/transcribe";
 import {ImplicitArrayBuffer} from "node:buffer";
 import {promptTopic} from "./prompting/promptTopic";
-import {promptPerson} from "./prompting/promptPerson";
+import {promptPerson, promptPersonTopic} from "./prompting/promptPerson";
 import {usePersonService} from "./services/person";
 import {useTranscriptionsService} from "./services/transcriptions";
 import {Person} from "./schemas/Person";
 import {PodcastsRouter} from "./routes/podcastsRouter";
-import {Checklist} from "./schemas/Checklist";
+import {Topic} from "./schemas/Checklist";
 import {calculateTopicScore} from "./util/calculateTopicScore";
 import {promptPersonQuestion} from "./prompting/promptPersonQuestion";
+import VAR from "webrtcvad"
+import VAD from "webrtcvad";
+import fs from "fs";
+
+interface VoiceSegment {
+    startTime: number;
+    endTime: number;
+}
 
 // Initialize Firebase
 const firebaseConfig: FirebaseOptions = {
@@ -42,42 +50,47 @@ app.use("*", async (c: Context, next) => {
 });
 app.route("/podcasts", PodcastsRouter)
 
-app.post("/prompt/live", async (c, next) => {
+app.post("/prompt/live", async (c: Context, next) => {
     const formData = await c.req.formData();
     const audioFile = formData.get("file");
     const previousTopic = formData.get("topic") as string | null
-    const previousScore: number = Number.parseFloat(formData.get("score") || 0)
-    const checklist: Checklist[] | null = formData.has("checklist") ? JSON.parse(formData.get("checklist") as string) as Checklist[] | null : null
+    const previousScore: number = Number.parseFloat((formData.get("score") as string | null) || "0")
 
     if (!audioFile || !(audioFile instanceof File)) {
         return c.text("Missing or invalid audio file", 400);
     }
 
     const audioBuffer: Buffer<ImplicitArrayBuffer<ArrayBuffer>> = Buffer.from(await audioFile.arrayBuffer());
+    fs.writeFileSync( "file.wav", audioBuffer)
+
     let [person, transcription]: [Person | undefined, string | undefined] = await Promise.all([
         usePersonService(db).getPerson(defaultUserId),
         transcribe(audioBuffer)
     ])
+    // @ts-ignore
     if (!person) person = {}
 
+    console.log({transcription})
     if (!transcription) return c.json({}, 500)
     const topic: string = await promptTopic(transcription)
-    if (topic === previousTopic) {
-        const topicScore: number = calculateTopicScore(person, topic)
-        if (previousScore < topicScore) {
-            const question = await promptPersonQuestion(topic, person)
-        }
+    person = await promptPersonTopic(transcription, topic as Topic, person)
+    const topicScore: number = calculateTopicScore(person as Person, topic as Topic)
+    if (topic !== previousTopic) {
+        // Topic has changed, ask new question
+        const question = await promptPersonQuestion(topic, person)
+        return c.json({question, topic, score: topicScore})
     }
-    if (!person && !previousTopic)
-        for (const key in Object.keys(person || {})) {
-            if (topic === "other") {
-                person[key]
+    if (topicScore > 0.80) {
+        // Sufficient information present, suggest new topic
+        for (const topic of Object.values(Topic)) {
+            const score = calculateTopicScore(person as Person, topic as Topic)
+            if (score < 0.80) {
+                const question = await promptPersonQuestion(topic, person)
+                return c.json({question, topic, score: topicScore})
             }
         }
-    if (topic === "other") {
     }
-
-    return c.json(topic)
+    return c.json({topic, score: topicScore})
 })
 
 app.post("/prompt", async (c, next) => {

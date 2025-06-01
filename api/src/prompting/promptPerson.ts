@@ -14,6 +14,7 @@ import {
 } from "../schemas/Person";
 import {toLLMSchema} from "../llama/toLLMSchema";
 import {MessageTextContentItem} from "llama-api-client/src/resources/chat/chat";
+import {Topic} from "../schemas/Checklist";
 
 const promptString: string = loadTextFile("PersonPrompt.md")
 
@@ -42,6 +43,23 @@ export async function promptPerson(transcription: string, person?: Person): Prom
         promptEventsSchema(transcription, data)
     ])
     console.log("Prompted person")
+    return data
+}
+
+export async function promptPersonTopic(transcription: string, topic: Topic, person?: Person): Promise<Person> {
+    const data: Person = structuredClone(person || {} as unknown as Person)
+    console.log("Prompting person for topic", topic)
+    if (topic === Topic.PersonalInformation) await promptPersonalInformationSchema(transcription, data)
+    if (topic === Topic.Attributes) await promptAttributesSchema(transcription, data)
+    if (topic === Topic.PhysicalCharacteristics) await promptPhysicalCharacteristicsSchema(transcription, data)
+    if (topic === Topic.Relationships) await promptPersonRelationshipsSchema(transcription, data)
+    if (topic === Topic.Education) await promptEducationsSchema(transcription, data)
+    if (topic === Topic.Employment) await promptEmploymentsSchema(transcription, data)
+    if (topic === Topic.Residences) await promptResidencesSchema(transcription, data)
+    if (topic === Topic.Assets) await promptAssetsSchema(transcription, data)
+    if (topic === Topic.Events) await promptEventsSchema(transcription, data)
+    if (topic === Topic.Other) return data
+    console.log("Prompted person for topic", topic)
     return data
 }
 

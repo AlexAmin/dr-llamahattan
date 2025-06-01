@@ -1,45 +1,40 @@
 <template>
-  <div class="flex flex-row items-center justify-center
-  transition-all duration-300 ease-in-out
-  rounded-full overflow-hidden
-  shadow-xl
-  bg-app-100 dark:bg-app-dark"
-       :class="[isRecording ? 'w-96':'w-12']"
-  >
-    <div
-        @click="()=>toggleRecording()"
-        class="relative flex flex-col justify-center items-center
+  <div class="flex flex-col max-w-7xl mx-auto">
+    <div class="flex flex-row items-center justify-center
+                transition-all duration-300 ease-in-out
+                rounded-full overflow-hidden w-full
+                shadow-xl
+              bg-app-100 dark:bg-app-dark"
+         :class="[isRecording ? 'w-96':'w-12']">
+      <div
+          @click="()=>toggleRecording()"
+          class="relative flex flex-col justify-center items-center
          mr-auto cursor-pointer
          p-4 rounded-r-lg transition-all duration-300 h-full"
-        :class="{
+          :class="{
         'bg-blue-500 hover:bg-blue-600': !isRecording,
         'bg-red-500 hover:bg-red-600': isRecording,
       }"
-    >
-      <div v-if="isRecording"
-           class="absolute w-3 h-3 rounded-full bg-red-500 animate-pulse"/>
-      <PhMicrophone
-          class="text-white"
-          :class="{
+      >
+        <div v-if="isRecording"
+             class="absolute w-3 h-3 rounded-full bg-red-500 animate-pulse"/>
+        <PhStop
+            v-if="isRecording"
+            class="text-white"
+            :class="{
+            'animate-pulse': isRecording
+          }"/>
+        <PhMicrophone
+            v-else
+            class="text-white"
+            :class="{
             'animate-pulse': isRecording
           }"
-          :size="24"
-      />
-    </div>
-  </div>
-  <div class="flex flex-col">
-    <LoadingSpinnerComponent v-if="isRecording && !checklist" class="mx-auto"/>
-    <div v-else-if="isRecording" class="flex items-center gap-2">
-      <div class="flex flex-col gap-1">
-        <div v-for="(quality, key) in checklist" :key="key" class="flex items-center gap-2">
-          <div class="w-3 h-3 rounded-full"
-               :class="{
-                 'bg-red-500': quality === 'missing',
-                 'bg-yellow-500': quality === 'bad',
-                 'bg-green-500': quality === 'good'
-               }"/>
-          <span class="text-sm">{{ key }}</span>
-        </div>
+            :size="24"
+        />
+      </div>
+      <div v-if="isRecording" class="flex flex-row mr-auto p-4">
+        <span>{{ question }}</span>
       </div>
     </div>
   </div>
@@ -47,7 +42,7 @@
 
 <script lang="ts" setup>
 import {type Ref, ref} from 'vue'
-import {PhMicrophone} from '@phosphor-icons/vue'
+import {PhMicrophone, PhStop} from '@phosphor-icons/vue'
 import axios from 'axios'
 import {encodeWAVChunk} from "@/util/wav.ts";
 import {recordFromMic} from "@/util/mic.ts";
@@ -64,6 +59,10 @@ const emit = defineEmits<{
 }>()
 const isRecording = ref(false)
 const checklist: Ref<Checklist | undefined> = ref(undefined)
+const topic: Ref<string> = ref("")
+const previousScore: Ref<number> = ref(0)
+const question: Ref<string> = ref("")
+let lastQuestionChange: number = -1
 
 let recorder: MediaRecorder | undefined = undefined
 const toggleRecording = async () => {
@@ -101,8 +100,15 @@ async function sendStreamedData(data: Float32Array) {
         timeout: 60 * 1000,
       }
   )
-  checklist.value = result.data
-  return null
+  const resultData = result.data as { question?: string, topic: string, score: number }
+  if (resultData.question) {
+    const timeSince = lastQuestionChange === -1 ? Number.MAX_SAFE_INTEGER : new Date().getTime() - lastQuestionChange
+    if (timeSince <= 10 * 1000) return
+    lastQuestionChange = new Date().getTime()
+    question.value = resultData.question
+  }
+  topic.value = resultData.topic
+  previousScore.value = resultData.score
 }
 
 async function promptPerson(data: Float32Array) {
