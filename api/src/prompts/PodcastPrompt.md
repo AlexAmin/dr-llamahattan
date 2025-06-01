@@ -15,7 +15,8 @@ Act as a professional writer for a podcast about a specific person's life.
 * **Overall Tone/Feel: Cheerful, Happy, Nostalgic.
 * **Purpose of the Podcast: Preserving memories of the person the podcast is about
 * **The Podcast should be recorded between two hosts. Invent names for the hosts. Dont use placeholders for their names.
-* 
+*
+
 ---
 
 ## Specific Writing Request
@@ -26,6 +27,10 @@ Act as a professional writer for a podcast about a specific person's life.
   details to write an engaging podcast of this length
 - Only welcome the user if this is the first chapter (index 1)
 - Only say good bye to the user if this is the last chapter
+
+## Language
+
+All output must be in {{LANGUAGE}}
 
 ## Data
 

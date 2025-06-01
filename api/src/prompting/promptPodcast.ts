@@ -10,8 +10,9 @@ import {MessageTextContentItem} from "llama-api-client/src/resources/chat/chat";
 
 const prompt: string = loadTextFile("PodcastPrompt.md")
 
-export async function promptPodcast(topic: string, durationMinutes: number, person: Person, chapter: PodcastChapter, chapterIndex: number, chapterCount: number): Promise<PodcastText[]> {
+export async function promptPodcast(language: string, topic: string, durationMinutes: number, person: Person, chapter: PodcastChapter, chapterIndex: number, chapterCount: number): Promise<PodcastText[]> {
     const injectedPrompt = structuredClone(prompt)
+        .replace("{{LANGUAGE}}", language)
         .replace("{{PODCAST_TOPIC}}", topic)
         .replace("{{PODCAST_DURATION}}", "" + durationMinutes)
         .replace("{{CHAPTER}}", JSON.stringify(chapter))
@@ -40,6 +41,7 @@ export async function promptPodcast(topic: string, durationMinutes: number, pers
 if (require.main === module) {
     const index = 1
     promptPodcast(
+        "en-US",
         "The person's family",
         10,
         SAMPLE_USER as Person,

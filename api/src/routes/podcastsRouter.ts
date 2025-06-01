@@ -48,6 +48,7 @@ PodcastsRouter.post("/", async (c: Context, next) => {
     const body = await c.req.json()
     const duration = body.duration
     const topic = body.topic
+    const language = body.language
 
     console.log("Loading person")
     const person: Person | undefined = await usePersonService(db).getPerson(userId)
@@ -57,7 +58,7 @@ PodcastsRouter.post("/", async (c: Context, next) => {
     console.log("Generating podcast")
     const podcastTexts: PodcastText[][] = await Promise.all(
         chapters.map((chapter, index) =>
-            promptPodcast(topic, duration, person, chapter, index, chapters.length))
+            promptPodcast(language, topic, duration, person, chapter, index, chapters.length))
     )
     const podcastText: PodcastText[] = podcastTexts.flat()
     console.log("Generating summary")

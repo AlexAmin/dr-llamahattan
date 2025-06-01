@@ -21,6 +21,19 @@
       </div>
 
       <div class="mb-4">
+        <label for="language" class="block text-sm font-medium text-gray-700 mb-1">Language</label>
+        <select
+            id="language"
+            v-model="formData.language"
+            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+        >
+          <option v-for="(value, key) in languageStrings" :key="key" :value="key">
+            {{ value }}
+          </option>
+        </select>
+      </div>
+
+      <div class="mb-4">
         <label for="duration" class="block text-sm font-medium text-gray-700 mb-1">
           Duration (minutes): {{ formData.duration }}
         </label>
@@ -53,17 +66,24 @@ import {type Ref, ref} from "vue";
 import {usePodcastsService} from "@/services/podcasts.ts";
 import LoadingSpinnerComponent from "@/components/LoadingSpinnerComponent.vue";
 
+const languageStrings = {
+  "en-US": "English",
+  "de-DE": "Deutsch",
+  "es-MX": "Español",
+  "prs": "دری"
+}
 const generatingPodcast: Ref<boolean> = ref(false)
 const showForm = ref(false)
 const formData = ref({
   topic: '',
-  duration: 'short' as 'short' | 'medium' | 'long'
+  duration: 'short' as 'short' | 'medium' | 'long',
+  language: Object.keys(languageStrings)[0]
 })
 
 const generatePodcast = async () => {
   generatingPodcast.value = true
-  await usePodcastsService().createPodcast(formData.value.topic, formData.value.duration)
+  await usePodcastsService().createPodcast(formData.value.language, formData.value.topic, formData.value.duration)
   showForm.value = false
-  formData.value = {topic: '', duration: 'short'}
+  formData.value = {topic: '', duration: 'short', language: Object.keys(languageStrings)[0]}
 }
 </script>
