@@ -8,7 +8,7 @@ We capture raw audio by simply listening to humans and turning their lifes into 
 🦙 where LLama API is used:
 - **llamaClient.ts** Llama API - Chat Completion with Structured Output & Train-of-Thought
 - **toLLSchema.ts** Llama API - Handling prompt structures
-- **promot*.ts** Handling prompt-to-strucutre mappings for local outputs
+- **prompt*.ts** Handling prompt-to-strucutre mappings for local outputs
 
 ## ⚡ how it works
 - Raw audio is captured using our browser-based recorder app that we've built during the hackathon
