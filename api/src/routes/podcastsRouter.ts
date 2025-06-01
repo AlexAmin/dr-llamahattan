@@ -11,6 +11,7 @@ import {PodcastText} from "../schemas/PodcastText";
 import {generateCoverImage} from "../google/generateCoverImage";
 import {FirebaseApp} from "firebase/app";
 import {Person} from "../schemas/Person";
+import {generateSpeech} from "../google/generateSpeech";
 
 export const PodcastsRouter = new Hono()
 
@@ -54,7 +55,11 @@ PodcastsRouter.post("/", async (c: Context, next) => {
     }
     console.log("Saving podcast")
     const id = await usePodcastsService(db).addPodcast(podcast)
+    console.log("Generating cover image")
     const url = await generateCoverImage(id, chapters, firebaseApp)
+    console.log("generate audio")
+    const audioURL = await generateSpeech(id, firebaseApp, podcastText)
     console.log("cover image", url)
+    console.log("audio url", audioURL)
     return c.json(podcast)
 })

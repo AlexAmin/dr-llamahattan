@@ -7,7 +7,7 @@
       {{ showForm ? 'Cancel' : 'Request New Podcast' }}
     </button>
 
-    <form v-if="showForm" @submit.prevent="handleSubmit" class="mt-4 p-6 bg-white rounded-lg shadow-md">
+    <form v-if="showForm" @submit.prevent="" class="mt-4 p-6 bg-white rounded-lg shadow-md">
       <div class="mb-4">
         <label for="topic" class="block text-sm font-medium text-gray-700 mb-1">Topic</label>
         <input
@@ -35,9 +35,12 @@
         >
       </div>
 
-      <button type="submit"
-              @click="generatePodcast"
-              class="w-full bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+      <LoadingSpinnerComponent v-if="generatingPodcast"/>
+      <button
+          v-else
+          type="submit"
+          @click="generatePodcast"
+          class="w-full bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
         Generate Podcast
       </button>
     </form>
@@ -46,11 +49,13 @@
 
 <script lang="ts" setup>
 import {PhPlus, PhX} from "@phosphor-icons/vue";
-import {ref} from "vue";
+import {type Ref, ref} from "vue";
 import {usePodcastsStore} from "@/stores/podcasts.ts";
 import {usePodcastsService} from "@/services/podcasts.ts";
+import LoadingSpinnerComponent from "@/components/LoadingSpinnerComponent.vue";
 
 const podcasts = usePodcastsStore()
+const generatingPodcast: Ref<boolean> = ref(false)
 const showForm = ref(false)
 const formData = ref({
   topic: '',
@@ -58,7 +63,8 @@ const formData = ref({
 })
 
 const generatePodcast = async () => {
-  await usePodcastsService().createPodcast(formData.value)
+  generatingPodcast.value = true
+  await usePodcastsService().createPodcast(formData.value.topic, formData.value.duration)
   showForm.value = false
   formData.value = {topic: '', duration: 10}
 }

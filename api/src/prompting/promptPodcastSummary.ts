@@ -17,5 +17,5 @@ export async function promptPodcastSummary(podcast: PodcastText[]) {
         },
         model: "Llama-4-Scout-17B-16E-Instruct-FP8",
     });
-    return JSON.parse((createChatCompletionResponse.completion_message.content as MessageTextContentItem).text)
+    return (createChatCompletionResponse.completion_message.content as MessageTextContentItem).text
 }

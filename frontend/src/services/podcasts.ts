@@ -1,5 +1,5 @@
 import apiClient from "../apiClient.ts";
-import type {PodcastSummary} from "../types/Podcast.ts";
+import type {PodcastSummary, PodcastText} from "../types/Podcast.ts";
 
 export const usePodcastsService = () => {
     async function getPodcasts(): Promise<PodcastSummary[]> {
@@ -12,8 +12,9 @@ export const usePodcastsService = () => {
         }
     }
 
-    async function createPodcast() {
-
+    async function createPodcast(topic: string, duration: number) {
+        const response = await apiClient.post<PodcastText[]>("/podcasts", {topic, duration})
+        return response.data;
     }
 
     return {

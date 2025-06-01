@@ -33,7 +33,7 @@
             :size="24"
         />
       </div>
-      <div v-if="isRecording" class="flex flex-row mr-auto p-4">
+      <div v-if="question && question.length > 0" class="flex flex-row mr-auto p-4">
         <span>{{ question }}</span>
       </div>
     </div>
@@ -43,11 +43,11 @@
 <script lang="ts" setup>
 import {type Ref, ref} from 'vue'
 import {PhMicrophone, PhStop} from '@phosphor-icons/vue'
-import axios from 'axios'
+import axios, {type AxiosResponse} from 'axios'
 import {encodeWAVChunk} from "@/util/wav.ts";
 import {recordFromMic} from "@/util/mic.ts";
-import LoadingSpinnerComponent from "@/components/LoadingSpinnerComponent.vue";
 import {Checklist} from "@/types/Checklist.ts";
+import apiClient from "@/apiClient.ts";
 
 const props = defineProps<{
   modelValue: any,
@@ -63,6 +63,11 @@ const topic: Ref<string> = ref("")
 const previousScore: Ref<number> = ref(0)
 const question: Ref<string> = ref("")
 let lastQuestionChange: number = -1
+
+apiClient.get("/prompt/question")
+    .then((result: AxiosResponse) => {
+      question.value = result.data.question
+    })
 
 let recorder: MediaRecorder | undefined = undefined
 const toggleRecording = async () => {
